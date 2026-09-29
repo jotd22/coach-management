@@ -1,1 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ibex FC — Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getFirestore,doc,getDoc,setDoc,addDoc,deleteDoc,updateDoc,collection,getDocs}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const app=initializeApp({apiKey:"AIzaSyA0V1bMhrLcDJlWCFz-9dX9ZUiVijLifkI",authDomain:"data-by-jo.firebaseapp.com",projectId:"data-by-jo",storageBucket:"data-by-jo.firebasestorage.app",messagingSenderId:"493581075111",appId:"1:493581075111:web:a6087a1f7dcc95b4f31182"});
+const db=getFirestore(app);
+window._db=db;window._FS={doc,getDoc,setDoc,addDoc,deleteDoc,updateDoc,collection,getDocs};
+window._fbReady=true;document.dispatchEvent(new Event('fb-ready'));
+</script>
+<style>
+:root{
+  --bg:#080808;--bg2:#111;--bg3:#1a1a1a;--bg4:#222;
+  --red:#dc2626;--red2:#b91c1c;--rda:rgba(220,38,38,.14);
+  --w:#fff;--w2:#f0f0f0;
+  --fog:rgba(255,255,255,.55);--mist:rgba(255,255,255,.28);--haze:rgba(255,255,255,.09);
+  --bord:rgba(255,255,255,.08);--bord2:rgba(255,255,255,.16);
+  --sh:0 2px 12px rgba(0,0,0,.5);--sh2:0 8px 40px rgba(0,0,0,.7);
+  --fh:'Bebas Neue',sans-serif;--fb:'DM Sans',sans-serif;
+  --r:12px;--rs:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--w);font-family:var(--fb);font-size:14px}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--red);border-radius:2px}
+
+/* ── SCREENS ── */
+.scr{display:none;min-height:100vh}
+.scr.on{display:flex}
+
+/* ── LOADING ── */
+#s-load{align-items:center;justify-content:center;flex-direction:column;gap:14px}
+.ll{font-family:var(--fh);font-size:52px;color:var(--w);letter-spacing:.04em}
+.ll span{color:var(--red)}
+.ld{display:flex;gap:6px}
+.ld i{width:7px;height:7px;border-radius:50%;background:var(--red);animation:blink 1.2s infinite}
+.ld i:nth-child(2){animation-delay:.2s}.ld i:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+
+/* ── LOGIN ── */
+#s-login{align-items:center;justify-content:center;flex-direction:column;background:var(--bg);padding:20px}
+.login-box{width:100%;max-width:420px}
+.login-logo{font-family:var(--fh);font-size:48px;color:var(--w);text-align:center;letter-spacing:.04em;margin-bottom:4px}
+.login-logo span{color:var(--red)}
+.login-sub{font-size:11px;color:var(--mist);text-align:center;letter-spacing:.18em;text-transform:uppercase;margin-bottom:32px}
+.role-cards{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.role-card{background:var(--bg2);border:1.5px solid var(--bord2);border-radius:var(--r);padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .15s;text-align:left;width:100%}
+.role-card:hover{border-color:var(--red);background:var(--rda)}
+.role-card-ico{width:44px;height:44px;background:var(--rda);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.role-card-name{font-family:var(--fb);font-size:14px;font-weight:700;color:var(--w)}
+.role-card-desc{font-size:11px;color:var(--mist);margin-top:2px}
+.role-card-arr{margin-left:auto;color:var(--mist);font-size:20px}
+
+/* Login form */
+.login-form-wrap{background:var(--bg2);border:1px solid var(--bord2);border-radius:var(--r);padding:24px}
+.login-form-title{font-family:var(--fh);font-size:22px;color:var(--w);margin-bottom:4px;letter-spacing:.04em}
+.login-form-sub{font-size:11px;color:var(--mist);margin-bottom:20px}
+.lf{margin-bottom:12px}
+.ll2{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--fog);margin-bottom:5px}
+.li{width:100%;background:var(--bg3);border:1.5px solid var(--bord2);border-radius:var(--rs);color:var(--w);font-family:var(--fb);font-size:14px;padding:11px 14px;transition:border-color .15s}
+.li:focus{outline:none;border-color:var(--red)}
+.li::placeholder{color:var(--mist)}
+.li option{background:var(--bg2)}
+.lerr{font-size:11px;color:var(--red);min-height:14px;margin-top:4px;font-weight:500}
+.login-btn{width:100%;background:var(--red);color:var(--w);border:none;border-radius:var(--rs);font-family:var(--fb);font-size:14px;font-weight:700;padding:13px;cursor:pointer;transition:all .15s;margin-top:4px}
+.login-btn:hover{background:var(--red2)}.login-btn:disabled{opacity:.45;cursor:not-allowed}
+.back-link{background:none;border:none;color:var(--mist);font-size:12px;cursor:pointer;width:100%;text-align:center;padding:8px;font-family:var(--fb);transition:color .15s}
+.back-link:hover{color:var(--w)}
+.u-item{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:var(--rs);cursor:pointer;transition:all .14s;border:1px solid var(--bord);margin-bottom:7px;background:var(--bg3)}
+.u-item:hover{border-color:var(--red);background:var(--rda)}
+.u-av{width:36px;height:36px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--w);flex-shrink:0}
+.u-name{font-size:13px;font-weight:600;color:var(--w)}
+.u-role{font-size:10px;color:var(--mist);text-transform:uppercase;letter-spacing:.07em}
+
+/* ── APP ── */
+#s-app{flex-direction:row;background:var(--bg)}
+.sidebar{background:var(--bg2);width:240px;flex-shrink:0;display:flex;flex-direction:column;height:100vh;position:sticky;top:0;overflow-y:auto;border-right:1px solid var(--bord)}
+.sb-top{padding:18px 16px 14px;border-bottom:1px solid var(--bord)}
+.sb-logo{font-family:var(--fh);font-size:22px;color:var(--w);letter-spacing:.02em}
+.sb-logo span{color:var(--red)}
+.sb-sub{font-size:9px;color:var(--mist);letter-spacing:.16em;text-transform:uppercase;margin-top:3px}
+.sb-user{margin:12px 12px 4px;background:var(--red);border-radius:var(--r);padding:11px 13px;display:flex;align-items:center;gap:10px}
+.sb-av{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--w);flex-shrink:0;border:2px solid rgba(255,255,255,.22)}
+.sb-uname{font-size:13px;font-weight:700;color:var(--w)}
+.sb-urole{font-size:10px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.06em}
+.nav-grp{padding:8px 0}
+.nav-lbl{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--mist);padding:0 16px;margin-bottom:2px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;color:var(--fog);font-size:12px;font-weight:500;transition:all .14s;border-left:3px solid transparent}
+.nav-item:hover{background:var(--bg3);color:var(--w)}
+.nav-item.on{background:var(--rda);color:var(--w);border-left-color:var(--red);font-weight:600}
+.nav-ico{font-size:15px;width:18px;text-align:center}
+.sb-foot{margin-top:auto;padding:12px}
+.sb-logout{background:none;border:1px solid var(--bord2);border-radius:var(--rs);color:var(--fog);font-size:12px;cursor:pointer;padding:9px 14px;width:100%;font-family:var(--fb);font-weight:500;transition:all .14s;text-align:left}
+.sb-logout:hover{border-color:var(--red);color:var(--red)}
+
+/* ── MAIN ── */
+.main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--bord);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;flex-shrink:0}
+.topbar-title{font-family:var(--fh);font-size:24px;color:var(--w);letter-spacing:.03em}
+.topbar-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.page{display:none;flex:1;overflow-y:auto;padding:22px 24px}
+.page.on{display:block}
+
+/* ── BUTTONS ── */
+.btn{font-family:var(--fb);font-size:12px;font-weight:600;padding:9px 18px;border-radius:var(--rs);border:none;cursor:pointer;transition:all .14s;display:inline-flex;align-items:center;gap:6px}
+.btn-red{background:var(--red);color:var(--w)}.btn-red:hover{background:var(--red2)}
+.btn-ghost{background:transparent;color:var(--fog);border:1px solid var(--bord2)}.btn-ghost:hover{border-color:var(--red);color:var(--red)}
+.btn-sm{padding:6px 12px;font-size:11px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── STAT CARDS ── */
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:20px}
+.card{background:var(--bg2);border:1px solid var(--bord);border-radius:var(--r);padding:16px 18px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--red)}
+.card-l{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--mist);margin-bottom:8px}
+.card-v{font-family:var(--fh);font-size:38px;color:var(--w);line-height:1}
+.card-v.r{color:var(--red)}
+.card-s{font-size:10px;color:var(--mist);margin-top:4px}
+
+/* ── PANELS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.panel{background:var(--bg2);border:1px solid var(--bord);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.panel-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mist);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+
+/* ── TABLE ── */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mist);font-weight:600;padding:8px 11px;text-align:left;border-bottom:1px solid var(--bord)}
+.tbl td{padding:10px 11px;border-bottom:1px solid var(--bord);color:var(--fog)}
+.tbl td:first-child{color:var(--w);font-weight:500}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--bg3)}
+.tbl-acts{display:flex;gap:5px;flex-wrap:wrap}
+
+/* ── BADGES ── */
+.bdg{font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:.04em;text-transform:uppercase;display:inline-block;font-family:var(--fb)}
+.bdg-r{background:var(--rda);color:var(--red)}
+.bdg-g{background:rgba(34,197,94,.13);color:#4ade80}
+.bdg-y{background:rgba(245,158,11,.13);color:#fbbf24}
+.bdg-w{background:var(--haze);color:var(--fog)}
+
+/* ── MODAL ── */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:flex-start;justify-content:center;padding:28px 16px;overflow-y:auto;backdrop-filter:blur(5px)}
+.modal.open{display:flex}
+.mbox{background:var(--bg2);border:1px solid var(--bord2);border-radius:var(--r);padding:24px;width:640px;max-width:96vw;box-shadow:var(--sh2)}
+.mbox-t{font-family:var(--fh);font-size:26px;color:var(--w);margin-bottom:4px;letter-spacing:.02em}
+.mbox-s{font-size:12px;color:var(--fog);margin-bottom:18px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:11px}
+.fg.f1{grid-template-columns:1fr}.fg.f3{grid-template-columns:1fr 1fr 1fr}
+.flbl{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--fog);margin-bottom:5px}
+.finp{width:100%;background:var(--bg3);border:1.5px solid var(--bord2);border-radius:var(--rs);color:var(--w);font-family:var(--fb);font-size:13px;padding:10px 13px;transition:border-color .15s}
+.finp:focus{outline:none;border-color:var(--red)}.finp::placeholder{color:var(--mist)}
+.finp option{background:var(--bg2)}
+.msec{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--red);margin:14px 0 9px;border-top:1px solid var(--bord);padding-top:13px}
+.mact{display:flex;gap:9px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--bord)}
+
+/* ── SCORE BTNS ── */
+.sgrid{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-bottom:8px}
+.slbl{font-size:12px;color:var(--fog)}
+.sbtns{display:flex;gap:4px}
+.sbtn{width:30px;height:30px;border-radius:6px;border:1px solid var(--bord2);background:var(--bg3);color:var(--mist);font-size:12px;font-weight:700;cursor:pointer;transition:all .14s;display:flex;align-items:center;justify-content:center}
+.sbtn.on{background:var(--red);border-color:var(--red);color:var(--w)}
+
+/* ── PLAYER PROFILE ── */
+.prof-hd{background:var(--bg2);border:1px solid var(--bord);border-radius:var(--r);padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.prof-av{width:64px;height:64px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:24px;color:var(--w);flex-shrink:0}
+.ptabs{display:flex;gap:3px;margin-bottom:16px;background:var(--bg2);border-radius:var(--rs);padding:4px;flex-wrap:wrap;border:1px solid var(--bord)}
+.ptab{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:8px 14px;border-radius:6px;cursor:pointer;color:var(--fog);transition:all .14s}
+.ptab.on{background:var(--red);color:var(--w)}
+.ptab-c{display:none}.ptab-c.on{display:block}
+
+/* ── MISC ── */
+.att-p{color:#4ade80;font-weight:600}.att-l{color:#fbbf24;font-weight:600}.att-a{color:var(--red);font-weight:600}
+.empty{text-align:center;padding:52px 20px}
+.empty-ico{font-size:36px;opacity:.22;margin-bottom:10px}
+.empty-t{font-size:14px;font-weight:700;color:var(--w);margin-bottom:6px}
+.empty-s{font-size:12px;color:var(--fog);margin-bottom:16px}
+.srch{background:var(--bg3);border:1px solid var(--bord2);border-radius:var(--rs);color:var(--w);font-family:var(--fb);font-size:12px;padding:8px 12px}
+.srch:focus{outline:none;border-color:var(--red)}.srch::placeholder{color:var(--mist)}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--w);color:var(--bg);border-radius:var(--rs);padding:11px 18px;font-size:13px;font-weight:600;opacity:0;transform:translateY(6px);transition:all .22s;z-index:400;pointer-events:none;font-family:var(--fb);box-shadow:var(--sh2)}
+.toast.show{opacity:1;transform:translateY(0)}.toast.err{background:var(--red);color:var(--w)}
+.saving{position:fixed;top:16px;right:16px;background:var(--red);color:var(--w);border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;opacity:0;transition:opacity .2s;z-index:300;pointer-events:none;letter-spacing:.06em;text-transform:uppercase}
+.saving.show{opacity:1}
+/* Creds box */
+.creds-box{background:var(--bg3);border:1px solid var(--bord2);border-radius:var(--rs);padding:18px;margin-bottom:14px}
+.creds-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bord)}
+.creds-row:last-child{border-bottom:none}
+.creds-lbl{font-size:11px;color:var(--fog)}
+.creds-val{font-family:var(--fh);font-size:22px;letter-spacing:.06em}
+/* Pending rows */
+.preg-row{background:var(--bg3);border:1px solid var(--bord);border-radius:var(--rs);padding:14px 16px;margin-bottom:10px}
+/* Website edit bar */
+#edit-bar{position:fixed;top:0;left:0;right:0;z-index:500;background:var(--red);padding:12px 24px;display:none;align-items:center;justify-content:space-between;gap:14px;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+#edit-bar.on{display:flex}
+.eb-msg{font-size:13px;font-weight:600;color:var(--w)}
+.eb-msg span{opacity:.7;font-weight:400}
+.eb-btn{font-size:12px;font-weight:700;padding:8px 20px;border-radius:var(--rs);border:none;cursor:pointer}
+.eb-save{background:var(--w);color:var(--red)}.eb-cancel{background:rgba(255,255,255,.15);color:var(--w)}
+
+/* Responsive */
+@media(max-width:1080px){.cards{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:780px){#s-app{flex-direction:column}.sidebar{width:100%;height:auto;position:static}.g2{grid-template-columns:1fr}.cards{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.cards{grid-template-columns:1fr}.fg{grid-template-columns:1fr}.fg.f3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+<div class="saving" id="saving">SAVING</div>
+
+<!-- ══ LOADING ══ -->
+<div class="scr on" id="s-load">
+  <div class="ll">IBEX <span>FC</span></div>
+  <div style="font-size:10px;color:var(--mist);letter-spacing:.2em;text-transform:uppercase">Player Development Portal</div>
+  <div class="ld"><i></i><i></i><i></i></div>
+</div>
+
+<!-- ══ LOGIN ══ -->
+<div class="scr" id="s-login">
+  <div class="login-box">
+    <div class="login-logo">IBEX <span>FC</span></div>
+    <div class="login-sub">Player Development Portal</div>
+
+    <!-- STEP 1: Choose role -->
+    <div id="step-choose">
+      <div class="role-cards">
+        <button class="role-card" onclick="chooseRole('admin')">
+          <div class="role-card-ico">⚙️</div>
+          <div><div class="role-card-name">Admin</div><div class="role-card-desc">Full academy management & control</div></div>
+          <div class="role-card-arr">›</div>
+        </button>
+        <button class="role-card" onclick="chooseRole('coach')">
+          <div class="role-card-ico">👨‍🏫</div>
+          <div><div class="role-card-name">Coach</div><div class="role-card-desc">Team management, attendance & reports</div></div>
+          <div class="role-card-arr">›</div>
+        </button>
+        <button class="role-card" onclick="chooseRole('parent')">
+          <div class="role-card-ico">👨‍👩‍👧</div>
+          <div><div class="role-card-name">Parent</div><div class="role-card-desc">View your child's progress & reports</div></div>
+          <div class="role-card-arr">›</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Login form -->
+    <div id="step-login" style="display:none">
+
+      <!-- Admin: select account from list -->
+      <div id="form-admin">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+          <button onclick="backToChoose()" style="background:var(--bg3);border:1px solid var(--bord);border-radius:50%;width:32px;height:32px;color:var(--fog);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">‹</button>
+          <div style="font-size:14px;font-weight:700;color:var(--w)" id="admin-form-title">Admin Login</div>
+        </div>
+        <div id="admin-user-list"></div>
+        <div id="admin-pass-form" style="display:none;margin-top:8px">
+          <div class="lf"><div class="ll2">Signing in as</div>
+            <div style="font-size:15px;font-weight:700;color:var(--w);padding:4px 0" id="admin-pass-name"></div>
+          </div>
+          <div class="lf"><div class="ll2">Password</div>
+            <input class="li" type="password" id="admin-pass-inp" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doAdminLogin()">
+          </div>
+          <div class="lerr" id="admin-err"></div>
+          <button class="login-btn" onclick="doAdminLogin()">Enter Portal</button>
+          <button class="back-link" onclick="showAdminList()">← Back to accounts</button>
+        </div>
+        <div id="admin-no-accounts" style="display:none;text-align:center;padding:12px 0">
+          <div style="font-size:12px;color:var(--fog);margin-bottom:12px">No admin account yet. Create one to start.</div>
+          <button class="login-btn" onclick="showCreateAdmin()">Create Admin Account</button>
+        </div>
+        <div id="create-admin-form" style="display:none">
+          <div class="lf"><div class="ll2">Full Name</div><input class="li" id="ca-name" placeholder="Your name"></div>
+          <div class="lf"><div class="ll2">Password</div><input class="li" type="password" id="ca-pass" placeholder="Choose a password"></div>
+          <div class="lf"><div class="ll2">Confirm Password</div><input class="li" type="password" id="ca-pass2" placeholder="Repeat password" onkeydown="if(event.key==='Enter')doCreateAdmin()"></div>
+          <div class="lerr" id="ca-err"></div>
+          <button class="login-btn" id="ca-btn" onclick="doCreateAdmin()">Create Account</button>
+        </div>
+      </div>
+
+      <!-- Coach/Parent: username login -->
+      <div id="form-uname" style="display:none">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+          <button onclick="backToChoose()" style="background:var(--bg3);border:1px solid var(--bord);border-radius:50%;width:32px;height:32px;color:var(--fog);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">‹</button>
+          <div style="font-size:14px;font-weight:700;color:var(--w)" id="uname-form-title">Coach Login</div>
+        </div>
+        <div style="font-size:11px;color:var(--fog);margin-bottom:16px">Use the username and password your admin created for you.</div>
+        <div class="lf"><div class="ll2">Username</div><input class="li" id="uname-inp" placeholder="Your username"></div>
+        <div class="lf"><div class="ll2">Password</div><input class="li" type="password" id="uname-pass" placeholder="Your password" onkeydown="if(event.key==='Enter')doUsernameLogin()"></div>
+        <div class="lerr" id="uname-err"></div>
+        <button class="login-btn" onclick="doUsernameLogin()">Sign In</button>
+        <button class="back-link" onclick="backToChoose()">← Back</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div class="scr" id="s-app">
+  <aside class="sidebar">
+    <div class="sb-top">
+      <div class="sb-logo">IBEX <span>FC</span></div>
+      <div class="sb-sub">Development Portal</div>
+    </div>
+    <div class="sb-user">
+      <div class="sb-av" id="sb-av">?</div>
+      <div><div class="sb-uname" id="sb-name">—</div><div class="sb-urole" id="sb-role">—</div></div>
+    </div>
+    <!-- Admin nav -->
+    <div id="nav-admin" class="nav-grp">
+      <div class="nav-lbl">Admin</div>
+      <div class="nav-item on" onclick="nav('dashboard',this)" id="ni-dash"><span class="nav-ico">📊</span>Dashboard</div>
+      <div class="nav-item" onclick="nav('players',this)" id="ni-players"><span class="nav-ico">👥</span>Players</div>
+      <div class="nav-item" onclick="nav('teams',this)" id="ni-teams"><span class="nav-ico">🏟️</span>Teams</div>
+      <div class="nav-item" onclick="nav('coaches',this)" id="ni-coaches"><span class="nav-ico">👨‍🏫</span>Coaches</div>
+      <div class="nav-item" onclick="nav('agegroups',this)" id="ni-age"><span class="nav-ico">📋</span>Age Groups</div>
+      <div class="nav-item" onclick="nav('pending',this)" id="ni-pending"><span class="nav-ico">🔔</span>Registrations <span id="pend-badge" style="display:none;background:var(--red);color:var(--w);font-size:9px;padding:1px 6px;border-radius:10px;margin-left:4px;font-weight:700">0</span></div>
+      <div class="nav-item" onclick="nav('parents',this)" id="ni-parents"><span class="nav-ico">👨‍👩‍👧</span>Parents</div>
+    </div>
+    <!-- Coaching nav (all roles) -->
+    <div class="nav-grp">
+      <div class="nav-lbl">Coaching</div>
+      <div class="nav-item" onclick="nav('attendance',this)" id="ni-att"><span class="nav-ico">✅</span>Attendance</div>
+      <div class="nav-item" onclick="nav('assessment',this)" id="ni-assess"><span class="nav-ico">⭐</span>Assessments</div>
+      <div class="nav-item" onclick="nav('matches',this)" id="ni-matches"><span class="nav-ico">⚽</span>Match Reports</div>
+    </div>
+    <!-- Admin only: edit website -->
+    <div id="nav-editweb" class="nav-grp" style="display:none">
+      <div class="nav-lbl">Website</div>
+      <div class="nav-item" onclick="openWebsiteEditor()" style="color:var(--red)"><span class="nav-ico">✏️</span>Edit Website</div>
+    </div>
+    <div class="sb-foot">
+      <button class="sb-logout" onclick="logout()">← Sign Out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-r" id="page-actions"></div>
+    </div>
+    <div id="pg-dashboard" class="page on">
+      <div class="cards" id="dash-cards"></div>
+      <div class="g2">
+        <div class="panel"><div class="panel-title">Recent Players</div><div id="dash-players"></div></div>
+        <div class="panel"><div class="panel-title">Teams</div><div id="dash-teams"></div></div>
+      </div>
+      <div class="panel"><div class="panel-title">Recent Attendance</div><div id="dash-att"></div></div>
+    </div>
+    <div id="pg-players" class="page">
+      <div id="player-list-view">
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+          <input class="srch" id="srch-player" placeholder="Search players…" oninput="filterPlayers(this.value)" style="width:200px">
+          <select class="srch" id="srch-team" onchange="filterPlayers(document.getElementById('srch-player').value)" style="width:180px"><option value="">All Teams</option></select>
+        </div>
+        <div id="players-tbl"></div>
+      </div>
+      <div id="player-profile-view" style="display:none">
+        <button class="btn btn-ghost btn-sm" onclick="showPlayerList()" style="margin-bottom:16px">← Back to Players</button>
+        <div id="player-profile-content"></div>
+      </div>
+    </div>
+    <div id="pg-teams" class="page"><div id="teams-tbl"></div></div>
+    <div id="pg-coaches" class="page"><div id="coaches-tbl"></div></div>
+    <div id="pg-agegroups" class="page"><div id="ag-tbl"></div></div>
+    <div id="pg-pending" class="page"><div id="pending-content"></div></div>
+    <div id="pg-parents" class="page"><div id="parents-tbl"></div></div>
+    <div id="pg-attendance" class="page"><div id="att-tbl"></div></div>
+    <div id="pg-assessment" class="page"><div id="assess-tbl"></div></div>
+    <div id="pg-matches" class="page"><div id="matches-tbl"></div></div>
+  </div>
+</div>
+
+<!-- ══ MODALS ══ -->
+<!-- PLAYER -->
+<div class="modal" id="mPlayer">
+  <div class="mbox">
+    <div class="mbox-t" id="mp-title">Register Player</div>
+    <div class="mbox-s">Fill in the player's details.</div>
+    <div class="msec" style="border:none;padding:0;margin-top:0">Personal</div>
+    <div class="fg"><div><div class="flbl">First Name *</div><input class="finp" id="p-fn" placeholder="First name"></div><div><div class="flbl">Last Name *</div><input class="finp" id="p-ln" placeholder="Last name"></div><div><div class="flbl">Date of Birth</div><input class="finp" type="date" id="p-dob"></div><div><div class="flbl">Gender</div><select class="finp" id="p-gen"><option value="Male">Male</option><option value="Female">Female</option></select></div></div>
+    <div class="msec">Academy</div>
+    <div class="fg"><div><div class="flbl">Age Group</div><select class="finp" id="p-ag"><option value="">Select</option></select></div><div><div class="flbl">Team</div><select class="finp" id="p-team"><option value="">Select</option></select></div><div><div class="flbl">Position</div><select class="finp" id="p-pos"><option value="Goalkeeper">Goalkeeper</option><option value="Defender">Defender</option><option value="Midfielder">Midfielder</option><option value="Forward">Forward</option></select></div><div><div class="flbl">Preferred Foot</div><select class="finp" id="p-foot"><option value="Right">Right</option><option value="Left">Left</option><option value="Both">Both</option></select></div></div>
+    <div class="msec">Parent / School</div>
+    <div class="fg"><div><div class="flbl">Parent Name</div><input class="finp" id="p-pn" placeholder="Parent name"></div><div><div class="flbl">Parent Phone</div><input class="finp" id="p-pp" placeholder="+251…"></div><div><div class="flbl">School</div><input class="finp" id="p-sch" placeholder="School name"></div><div><div class="flbl">Grade</div><input class="finp" id="p-gr" placeholder="Grade"></div></div>
+    <div class="msec">Medical</div>
+    <div class="fg"><div><div class="flbl">Injuries</div><input class="finp" id="p-inj" placeholder="None"></div><div><div class="flbl">Allergies</div><input class="finp" id="p-all" placeholder="None"></div><div><div class="flbl">Asthma</div><select class="finp" id="p-ast"><option value="No">No</option><option value="Yes">Yes</option></select></div><div><div class="flbl">Emergency Contact</div><input class="finp" id="p-em" placeholder="Name & phone"></div></div>
+    <div class="mact"><button class="btn btn-ghost" onclick="closeM('mPlayer')">Cancel</button><button class="btn btn-red" id="save-p-btn" onclick="savePlayer()">Save Player</button></div>
+  </div>
+</div>
+<!-- TEAM -->
+<div class="modal" id="mTeam">
+  <div class="mbox" style="max-width:440px">
+    <div class="mbox-t" id="mt-title">Create Team</div>
+    <div class="fg f1"><div><div class="flbl">Team Name *</div><input class="finp" id="t-name" placeholder="e.g. U12 Red"></div><div><div class="flbl">Age Group</div><select class="finp" id="t-ag"><option value="">Select</option></select></div><div><div class="flbl">Assign Coach</div><select class="finp" id="t-coach"><option value="">Optional</option></select></div></div>
+    <div class="mact"><button class="btn btn-ghost" onclick="closeM('mTeam')">Cancel</button><button class="btn btn-red" onclick="saveTeam()">Save</button></div>
+  </div>
+</div>
+<!-- AGE GROUP -->
+<div class="modal" id="mAG">
+  <div class="mbox" style="max-width:380px">
+    <div class="mbox-t">Create Age Group</div>
+    <div class="fg f1"><div><div class="flbl">Name *</div><input class="finp" id="ag-name" placeholder="e.g. U16"></div><div><div class="flbl">Min Age</div><input class="finp" type="number" id="ag-min" placeholder="13"></div><div><div class="flbl">Max Age</div><input class="finp" type="number" id="ag-max" placeholder="16"></div></div>
+    <div class="mact"><button class="btn btn-ghost" onclick="closeM('mAG')">Cancel</button><button class="btn btn-red" onclick="saveAG()">Save</button></div>
+  </div>
+</div>
+<!-- COACH -->
+<div class="modal" id="mCoach">
+  <div class="mbox" style="max-width:440px">
+    <div class="mbox-t">Add Coach</div>
+    <div class="mbox-s">Set credentials for the new coach — share these with them.</div>
+    <div class="fg f1"><div><div class="flbl">Full Name *</div><input class="finp" id="co-name" placeholder="Coach full name"></div><div><div class="flbl">Username *</div><input class="finp" id="co-uname" placeholder="e.g. coach_dawit"></div><div><div class="flbl">Password *</div><input class="finp" id="co-pass" placeholder="Set a password"></div><div><div class="flbl">Assign Team</div><select class="finp" id="co-team"><option value="">Assign later</option></select></div></div>
+    <div class="mact"><button class="btn btn-ghost" onclick="closeM('mCoach')">Cancel</button><button class="btn btn-red" onclick="saveCoach()">Create Coach</button></div>
+  </div>
+</div>
+<!-- PARENT ACCOUNT -->
+<div class="modal" id="mParent">
+  <div class="mbox" style="max-width:440px">
+    <div class="mbox-t">Create Parent Account</div>
+    <div class="fg f1"><div><div class="flbl">Parent Name *</div><input class="finp" id="par-name" placeholder="Parent full name"></div><div><div class="flbl">Username *</div><input class="finp" id="par-uname" placeholder="e.g. parent_yonas"></div><div><div class="flbl">Password *</div><input class="finp" id="par-pass" placeholder="Set a password"></div><div><div class="flbl">Link to Player *</div><select class="finp" id="par-player"><option value="">Select player</option></select></div></div>
+    <div class="mact"><button class="btn btn-ghost" onclick="closeM('mParent')">Cancel</button><button class="btn btn-red" onclick="saveParent()">Create Account</button></div>
+  </div>
+</div>
+<!-- ATTENDANCE -->
+<div class="modal" id="mAtt">
+  <div class="mbox" style="max-width:480px">
+    <div class="mbox-t">Log Attendance</div>
+    <div class="fg"><div><div class="flbl">Date *</div><input class="finp" type="date" id="att-date"></div><div><div class="flbl">Session</div><select class="finp" id="att-type"><option value="Training">Training</option><option value="Match">Match</option></select></div><div><div class="flbl">Player *</div><select class="finp" id="att-player"><option value="">Select</option></select></div><div><div class="flbl">Status</div><select class="finp" id="att-status"><option value="Present">Present</option><option value="Late">Late</option><option value="Absent">Absent</option></select></div><div><div class="flbl">Minutes</div><input class="finp" type="number" id="att-mins" placeholder="90"></div></div>
+    <div class="fg f1"><div><div class="flbl">Notes</div><textarea class="finp" id="att-notes" rows="2" placeholder="Optional…" style="resize:vertical"></textarea></div></div>
+    <div class="mact"><button class="btn btn-ghost" onclick="closeM('mAtt')">Cancel</button><button class="btn btn-red" onclick="saveAtt()">Save</button></div>
+  </div>
+</div>
+<!-- ASSESSMENT -->
+<div class="modal" id="mAssess">
+  <div class="mbox">
+    <div class="mbox-t">Technical Assessment</div>
+    <div class="mbox-s">Rate each skill 1–5.</div>
+    <div class="fg"><div><div class="flbl">Player *</div><select class="finp" id="as-player"><option value="">Select</option></select></div><div><div class="flbl">Date</div><input class="finp" type="date" id="as-date"></div></div>
+    <div class="msec">Skills</div>
+    <div id="skill-grid"></div>
+    <div class="msec">Comment</div>
+    <textarea class="finp" id="as-comment" rows="3" placeholder="Coach comment…" style="resize:vertical"></textarea>
+    <div class="mact"><button class="btn btn-ghost" onclick="closeM('mAssess')">Cancel</button><button class="btn btn-red" onclick="saveAssessment()">Save</button></div>
+  </div>
+</div>
+<!-- MATCH -->
+<div class="modal" id="mMatch">
+  <div class="mbox">
+    <div class="mbox-t">Match Report</div>
+    <div class="fg"><div><div class="flbl">Player *</div><select class="finp" id="mr-player"><option value="">Select</option></select></div><div><div class="flbl">Date *</div><input class="finp" type="date" id="mr-date"></div><div><div class="flbl">Opponent *</div><input class="finp" id="mr-opp" placeholder="Opponent team"></div><div><div class="flbl">Position</div><select class="finp" id="mr-pos"><option value="Goalkeeper">Goalkeeper</option><option value="Defender">Defender</option><option value="Midfielder">Midfielder</option><option value="Forward">Forward</option></select></div></div>
+    <div class="fg f3"><div><div class="flbl">Minutes</div><input class="finp" type="number" id="mr-mins" placeholder="90"></div><div><div class="flbl">Goals</div><input class="finp" type="number" id="mr-g" placeholder="0"></div><div><div class="flbl">Assists</div><input class="finp" type="number" id="mr-a" placeholder="0"></div><div><div class="flbl">Key Passes</div><input class="finp" type="number" id="mr-kp" placeholder="0"></div><div><div class="flbl">Tackles</div><input class="finp" type="number" id="mr-t" placeholder="0"></div><div><div class="flbl">Rating (1–10)</div><input class="finp" type="number" id="mr-r" placeholder="7" min="1" max="10"></div></div>
+    <div class="fg f1"><div><div class="flbl">Feedback</div><textarea class="finp" id="mr-fb" rows="3" placeholder="Performance notes…" style="resize:vertical"></textarea></div></div>
+    <div class="mact"><button class="btn btn-ghost" onclick="closeM('mMatch')">Cancel</button><button class="btn btn-red" onclick="saveMatch()">Save</button></div>
+  </div>
+</div>
+<!-- DELETE -->
+<div class="modal" id="mDel">
+  <div class="mbox" style="max-width:380px">
+    <div class="mbox-t">Confirm Delete</div>
+    <div id="del-msg" style="background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.25);border-radius:var(--rs);padding:13px;font-size:13px;color:var(--w);margin-bottom:4px"></div>
+    <div class="mact"><button class="btn btn-ghost" onclick="closeM('mDel')">Cancel</button><button class="btn btn-red" id="del-btn">Delete</button></div>
+  </div>
+</div>
+<!-- CREDENTIALS -->
+<div class="modal" id="mCreds">
+  <div class="mbox" style="max-width:400px">
+    <div class="mbox-t" id="creds-title" style="color:#4ade80">✓ Account Created</div>
+    <div class="mbox-s" id="creds-sub">Share these credentials.</div>
+    <div class="creds-box">
+      <div class="creds-row"><div class="creds-lbl">Username</div><div class="creds-val" id="creds-uname">—</div></div>
+      <div class="creds-row"><div class="creds-lbl">Password</div><div class="creds-val" style="color:var(--red)" id="creds-pass">—</div></div>
+    </div>
+    <div style="font-size:11px;color:var(--fog);margin-bottom:14px">⚠️ Screenshot this — it will not be shown again.</div>
+    <div class="mact"><button class="btn btn-red" onclick="closeM('mCreds')">Done ✓</button></div>
+  </div>
+</div>
+
+<!-- EDIT BAR (website editor) -->
+<div id="edit-bar">
+  <div class="eb-msg">✏️ Edit Mode — <span>Click any text on the website to edit it</span></div>
+  <div style="display:flex;gap:8px">
+    <button class="eb-btn eb-cancel" onclick="cancelWebEdit()">Cancel</button>
+    <button class="eb-btn eb-save" onclick="saveWebEdits()">Save All ✓</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+//  IBEX FC PORTAL — ADMIN + COACH
+// ═══════════════════════════════════════
+const COL='ibex_';
+const SKILLS=['Ball Control','Passing','Dribbling','Shooting','First Touch'];
+let SESSION=null, _cache={players:[],teams:[],coaches:[],ageGroups:[],attendance:[],assessments:[],matches:[]};
+let _editPid=null, _techScores={};
+
+// ── UTILS ──
+const $=id=>document.getElementById(id);
+function hp(p){let h=0;for(let i=0;i<p.length;i++)h=(Math.imul(31,h)+p.charCodeAt(i))|0;return h.toString(36);}
+function ini(n){return(n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);}
+function fmtDate(d){if(!d)return'—';try{return new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}catch{return d}}
+function calcAge(d){if(!d)return'—';return Math.floor((Date.now()-new Date(d).getTime())/31557600000);}
+function openM(id){$(id).classList.add('open');}
+function closeM(id){$(id).classList.remove('open');}
+function toast(m,err=false){const t=$('toast');t.textContent=m;t.className='toast show'+(err?' err':'');setTimeout(()=>t.classList.remove('show'),2800);}
+function svg(){const s=$('saving');s.classList.add('show');setTimeout(()=>s.classList.remove('show'),1800);}
+function waitFB(cb){if(window._fbReady)cb();else document.addEventListener('fb-ready',cb,{once:true});}
+function scr(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));$(id).classList.add('on');}
+
+// ── LOGIN ──
+function chooseRole(role){
+  $('step-choose').style.display='none';
+  $('step-login').style.display='block';
+  if(role==='admin'){
+    $('form-admin').style.display='block';
+    $('form-uname').style.display='none';
+    $('admin-form-title').textContent='Admin Login';
+    loadAdminAccounts();
+  } else {
+    $('form-admin').style.display='none';
+    $('form-uname').style.display='block';
+    $('uname-form-title').textContent=role==='coach'?'Coach Login':'Parent Login';
+    $('uname-inp').value='';$('uname-pass').value='';$('uname-err').textContent='';
+    setTimeout(()=>$('uname-inp').focus(),100);
+  }
+}
+
+function backToChoose(){
+  $('step-choose').style.display='block';
+  $('step-login').style.display='none';
+}
+
+async function loadAdminAccounts(){
+  const list=$('admin-user-list');
+  list.innerHTML='<div style="font-size:11px;color:var(--fog);padding:10px 0">Loading…</div>';
+  try{
+    const snap=await window._FS.getDocs(window._FS.collection(window._db,COL+'users'));
+    const admins=[];
+    snap.forEach(d=>{const x=d.data();if(x.role==='admin'&&!x.deleted)admins.push({id:d.id,...x});});
+    if(!admins.length){
+      list.innerHTML='';
+      $('admin-no-accounts').style.display='block';
+      return;
+    }
+    $('admin-no-accounts').style.display='none';
+    list.innerHTML=admins.map(u=>`
+      <div class="u-item" onclick="selectAdmin('${u.id}','${(u.name||'').replace(/'/g,"\\'")}')">
+        <div class="u-av">${ini(u.name)}</div>
+        <div><div class="u-name">${u.name}</div><div class="u-role">Admin</div></div>
+        <div style="margin-left:auto;color:var(--mist);font-size:18px">›</div>
+      </div>`).join('');
+  }catch(e){list.innerHTML='<div style="color:var(--red);font-size:12px;padding:8px 0">Connection error — check Firebase</div>';}
+}
+
+let _selAdminId=null;
+function selectAdmin(id,name){
+  _selAdminId=id;
+  $('admin-user-list').style.display='none';
+  $('admin-pass-form').style.display='block';
+  $('admin-pass-name').textContent=name;
+  $('admin-pass-inp').value='';$('admin-err').textContent='';
+  setTimeout(()=>$('admin-pass-inp').focus(),100);
+}
+function showAdminList(){$('admin-user-list').style.display='block';$('admin-pass-form').style.display='none';}
+
+async function doAdminLogin(){
+  const pass=$('admin-pass-inp').value;
+  if(!pass){$('admin-err').textContent='Enter your password';return;}
+  try{
+    const snap=await window._FS.getDoc(window._FS.doc(window._db,COL+'users',_selAdminId));
+    if(!snap.exists()||hp(pass)!==snap.data().password){$('admin-err').textContent='Incorrect password';return;}
+    SESSION={id:_selAdminId,...snap.data()};
+    sessionStorage.setItem('ibex_s',JSON.stringify(SESSION));
+    enterApp();
+  }catch(e){$('admin-err').textContent='Connection error';}
+}
+
+function showCreateAdmin(){$('admin-no-accounts').style.display='none';$('create-admin-form').style.display='block';}
+async function doCreateAdmin(){
+  const name=$('ca-name').value.trim(),pass=$('ca-pass').value,pass2=$('ca-pass2').value;
+  const err=$('ca-err');
+  if(!name){err.textContent='Name required';return;}
+  if(!pass){err.textContent='Password required';return;}
+  if(pass!==pass2){err.textContent='Passwords do not match';return;}
+  const btn=$('ca-btn');btn.disabled=true;btn.textContent='Creating…';
+  try{
+    const id='user_'+Date.now();
+    await window._FS.setDoc(window._FS.doc(window._db,COL+'users',id),{name,role:'admin',password:hp(pass),created:Date.now()});
+    SESSION={id,name,role:'admin'};
+    sessionStorage.setItem('ibex_s',JSON.stringify(SESSION));
+    enterApp();
+  }catch(e){err.textContent='Error: '+e.message;}
+  btn.disabled=false;btn.textContent='Create Account';
+}
+
+async function doUsernameLogin(){
+  const uname=($('uname-inp').value||'').trim().toLowerCase(),pass=$('uname-pass').value;
+  const err=$('uname-err');err.textContent='';
+  if(!uname||!pass){err.textContent='Enter username and password';return;}
+  try{
+    const snap=await window._FS.getDocs(window._FS.collection(window._db,COL+'users'));
+    let found=null;
+    snap.forEach(d=>{const x=d.data();if((x.username||'').toLowerCase()===uname&&!x.deleted)found={id:d.id,...x};});
+    if(!found){err.textContent='Username not found';return;}
+    if(hp(pass)!==found.password){err.textContent='Incorrect password';return;}
+    SESSION=found;
+    sessionStorage.setItem('ibex_s',JSON.stringify(SESSION));
+    enterApp();
+  }catch(e){err.textContent='Connection error';}
+}
+
+function logout(){sessionStorage.removeItem('ibex_s');SESSION=null;scr('s-login');backToChoose();}
+
+// ── APP ENTRY ──
+async function enterApp(){
+  $('sb-name').textContent=SESSION.name;
+  $('sb-role').textContent=SESSION.role;
+  $('sb-av').textContent=ini(SESSION.name);
+  if(SESSION.role==='coach') $('nav-admin').style.display='none';
+  if(SESSION.role==='admin') $('nav-editweb').style.display='block';
+  if(SESSION.role==='parent'){
+    scr('s-app');
+    await loadAll();
+    renderParentView();
+    return;
+  }
+  scr('s-app');
+  await loadAll();
+  await seedAgeGroups();
+  loadPendingBadge();
+  renderDashboard();
+  nav('dashboard',$('ni-dash'));
+}
+
+async function seedAgeGroups(){
+  if(_cache.ageGroups.length>0)return;
+  const groups=[{name:'U8',minAge:6,maxAge:8},{name:'U10',minAge:9,maxAge:10},{name:'U12',minAge:11,maxAge:12},{name:'U14',minAge:13,maxAge:14}];
+  for(const g of groups){
+    try{const ref=await window._FS.addDoc(window._FS.collection(window._db,COL+'ageGroups'),{...g,created:Date.now()});_cache.ageGroups.push({id:ref.id,...g});}catch(e){}
+  }
+}
+
+async function loadAll(){
+  try{
+    const map=[['players','players'],['teams','teams'],['coaches','users'],['ageGroups','ageGroups'],['attendance','attendance'],['assessments','assessments'],['matches','matchReports']];
+    await Promise.all(map.map(async([k,col])=>{
+      const snap=await window._FS.getDocs(window._FS.collection(window._db,COL+col));
+      _cache[k]=[];snap.forEach(d=>{const x=d.data();if(!x.deleted)_cache[k].push({id:d.id,...x});});
+    }));
+    _cache.coaches=_cache.coaches.filter(u=>u.role==='coach'||u.role==='admin');
+  }catch(e){toast('Error loading data',true);}
+}
+
+// ── NAV ──
+const _titles={dashboard:'Dashboard',players:'Players',teams:'Teams',coaches:'Coaches',agegroups:'Age Groups',pending:'Registrations',parents:'Parents',attendance:'Attendance',assessment:'Assessments',matches:'Match Reports'};
+const _actions={
+  players:()=>`<button class="btn btn-red btn-sm" onclick="openPlayerM()">+ Register Player</button>`,
+  teams:()=>`<button class="btn btn-red btn-sm" onclick="openTeamM()">+ Create Team</button>`,
+  coaches:()=>`<button class="btn btn-red btn-sm" onclick="openCoachM()">+ Add Coach</button>`,
+  agegroups:()=>`<button class="btn btn-red btn-sm" onclick="openAGM()">+ Add Age Group</button>`,
+  parents:()=>`<button class="btn btn-red btn-sm" onclick="openParentM()">+ Create Parent Account</button>`,
+  attendance:()=>`<button class="btn btn-red btn-sm" onclick="openAttM()">+ Log Attendance</button>`,
+  assessment:()=>`<button class="btn btn-red btn-sm" onclick="openAssessM()">+ Add Assessment</button>`,
+  matches:()=>`<button class="btn btn-red btn-sm" onclick="openMatchM()">+ Add Match Report</button>`,
+};
+const _renders={players:renderPlayers,teams:renderTeams,coaches:renderCoaches,agegroups:renderAG,pending:renderPending,parents:renderParents,attendance:renderAtt,assessment:renderAssess,matches:renderMatches};
+
+function nav(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('on'));
+  $('pg-'+id)?.classList.add('on');
+  if(el)el.classList.add('on');
+  $('page-title').textContent=_titles[id]||id;
+  $('page-actions').innerHTML=_actions[id]?_actions[id]():'';
+  if(_renders[id])_renders[id]();
+}
+
+// ── DASHBOARD ──
+function renderDashboard(){
+  const p=_cache.players,t=_cache.teams,a=_cache.attendance;
+  $('dash-cards').innerHTML=`
+    <div class="card"><div class="card-l">Total Players</div><div class="card-v r">${p.length}</div><div class="card-s">registered</div></div>
+    <div class="card"><div class="card-l">Teams</div><div class="card-v">${t.length}</div><div class="card-s">active</div></div>
+    <div class="card"><div class="card-l">Coaches</div><div class="card-v">${_cache.coaches.filter(c=>c.role==='coach').length}</div><div class="card-s">staff</div></div>
+    <div class="card"><div class="card-l">Age Groups</div><div class="card-v">${_cache.ageGroups.length}</div><div class="card-s">groups</div></div>`;
+  const recent=[...p].sort((a,b)=>(b.created||0)-(a.created||0)).slice(0,6);
+  $('dash-players').innerHTML=recent.length
+    ?`<table class="tbl"><thead><tr><th>Name</th><th>Position</th><th>Team</th><th>Age</th></tr></thead><tbody>${recent.map(pl=>{const tm=t.find(x=>x.id===pl.teamId);return`<tr><td style="cursor:pointer" onclick="viewPlayer('${pl.id}')">${pl.firstName} ${pl.lastName}</td><td><span class="bdg bdg-r">${pl.position||'—'}</span></td><td>${tm?tm.name:'—'}</td><td>${calcAge(pl.dob)}</td></tr>`;}).join('')}</tbody></table>`
+    :`<div class="empty"><div class="empty-ico">👥</div><div class="empty-t">No Players</div><button class="btn btn-red btn-sm" onclick="openPlayerM()">+ Register</button></div>`;
+  $('dash-teams').innerHTML=t.length
+    ?t.map(tm=>{const cnt=p.filter(x=>x.teamId===tm.id).length;const c=_cache.coaches.find(x=>x.id===tm.coachId);return`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--bord)"><div><div style="font-size:13px;font-weight:600;color:var(--w)">${tm.name}</div><div style="font-size:10px;color:var(--mist)">${c?c.name:'No coach'}</div></div><span class="bdg bdg-r">${cnt}</span></div>`;}).join('')
+    :`<div class="empty"><div class="empty-ico">🏟️</div><div class="empty-t">No Teams</div><button class="btn btn-ghost btn-sm" onclick="openTeamM()">+ Create</button></div>`;
+  const recAtt=[...a].sort((a,b)=>(b.created||0)-(a.created||0)).slice(0,8);
+  $('dash-att').innerHTML=recAtt.length
+    ?`<table class="tbl"><thead><tr><th>Player</th><th>Date</th><th>Type</th><th>Status</th><th>Mins</th></tr></thead><tbody>${recAtt.map(at=>{const pl=p.find(x=>x.id===at.playerId);const sc=at.status==='Present'?'att-p':at.status==='Late'?'att-l':'att-a';return`<tr><td>${pl?pl.firstName+' '+pl.lastName:'Unknown'}</td><td>${fmtDate(at.date)}</td><td><span class="bdg bdg-w">${at.sessionType}</span></td><td class="${sc}">${at.status}</td><td>${at.minutes||'—'}</td></tr>`;}).join('')}</tbody></table>`
+    :`<div class="empty"><div class="empty-ico">✅</div><div class="empty-t">No Attendance</div></div>`;
+}
+
+// ── PLAYERS ──
+function renderPlayers(){
+  const tf=$('srch-team');
+  tf.innerHTML='<option value="">All Teams</option>'+_cache.teams.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+  filterPlayers('');
+  $('player-list-view').style.display='block';
+  $('player-profile-view').style.display='none';
+  $('page-actions').innerHTML=_actions.players();
+}
+function filterPlayers(q){
+  const tid=$('srch-team').value;
+  let list=SESSION.role==='coach'
+    ?_cache.players.filter(p=>{const t=_cache.teams.find(t=>t.coachId===SESSION.id);return t&&p.teamId===t.id;})
+    :_cache.players;
+  if(q)list=list.filter(p=>(p.firstName+' '+p.lastName).toLowerCase().includes(q.toLowerCase()));
+  if(tid)list=list.filter(p=>p.teamId===tid);
+  $('players-tbl').innerHTML=list.length
+    ?`<table class="tbl"><thead><tr><th>Name</th><th>Age</th><th>Position</th><th>Team</th><th>Parent</th><th>Actions</th></tr></thead><tbody>${list.map(p=>{
+        const t=_cache.teams.find(x=>x.id===p.teamId);
+        return`<tr><td><div style="display:flex;align-items:center;gap:8px"><div style="width:26px;height:26px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--w);flex-shrink:0">${ini(p.firstName+' '+p.lastName)}</div><span style="cursor:pointer" onclick="viewPlayer('${p.id}')">${p.firstName} ${p.lastName}</span></div></td><td>${calcAge(p.dob)}</td><td><span class="bdg bdg-r">${p.position||'—'}</span></td><td>${t?t.name:'—'}</td><td>${p.parentName||'—'}</td>
+          <td><div class="tbl-acts"><button class="btn btn-ghost btn-sm" onclick="viewPlayer('${p.id}')">View</button><button class="btn btn-ghost btn-sm" onclick="editPlayer('${p.id}')">Edit</button><button class="btn btn-sm" style="background:var(--rda);color:var(--red)" onclick="confirmDel('${p.id}','player','${(p.firstName+' '+p.lastName).replace(/'/g,"\\'")}')">Del</button></div></td></tr>`;
+      }).join('')}</tbody></table>`
+    :`<div class="empty"><div class="empty-ico">👥</div><div class="empty-t">No Players</div><div class="empty-s">Register your first player.</div><button class="btn btn-red" onclick="openPlayerM()">+ Register Player</button></div>`;
+}
+
+function viewPlayer(id){
+  const p=_cache.players.find(x=>x.id===id);if(!p)return;
+  $('player-list-view').style.display='none';$('player-profile-view').style.display='block';
+  $('page-actions').innerHTML='';
+  const t=_cache.teams.find(x=>x.id===p.teamId),ag=_cache.ageGroups.find(x=>x.id===p.ageGroupId);
+  const pA=_cache.attendance.filter(a=>a.playerId===id),pS=_cache.assessments.filter(a=>a.playerId===id),pM=_cache.matches.filter(m=>m.playerId===id);
+  const ar=pA.length?Math.round(pA.filter(a=>a.status==='Present').length/pA.length*100):0;
+  const tG=pM.reduce((s,m)=>s+(m.goals||0),0),tA=pM.reduce((s,m)=>s+(m.assists||0),0);
+  const avgT=pS.length?(pS.reduce((s,a)=>{const sc=Object.values(a.scores||{});return s+sc.reduce((x,v)=>x+v,0)/(sc.length||1);},0)/pS.length).toFixed(1):'—';
+  $('player-profile-content').innerHTML=`
+    <div class="prof-hd">
+      <div class="prof-av">${ini(p.firstName+' '+p.lastName)}</div>
+      <div style="flex:1">
+        <div style="font-family:var(--fh);font-size:30px;color:var(--w);letter-spacing:.02em;line-height:1">${p.firstName} ${p.lastName}</div>
+        <div style="font-size:12px;color:var(--fog);margin-top:5px;display:flex;gap:12px;flex-wrap:wrap"><span>⚽ ${p.position||'—'}</span><span>🏟️ ${t?t.name:'No team'}</span><span>📋 ${ag?ag.name:'—'}</span><span>🎂 ${calcAge(p.dob)} yrs</span></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="editPlayer('${id}')">Edit</button>
+        <button class="btn btn-red btn-sm" onclick="openAttM('${id}')">+ Attendance</button>
+        <button class="btn btn-red btn-sm" onclick="openAssessM('${id}')">+ Assessment</button>
+        <button class="btn btn-red btn-sm" onclick="openMatchM('${id}')">+ Match</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+      <div class="card"><div class="card-l">Attendance</div><div class="card-v r">${ar}%</div><div class="card-s">${pA.length} sessions</div></div>
+      <div class="card"><div class="card-l">Avg Tech</div><div class="card-v">${avgT}</div><div class="card-s">/5.0</div></div>
+      <div class="card"><div class="card-l">Goals</div><div class="card-v">${tG}</div><div class="card-s">${pM.length} matches</div></div>
+      <div class="card"><div class="card-l">Assists</div><div class="card-v">${tA}</div></div>
+    </div>
+    <div class="ptabs">
+      <div class="ptab on" onclick="showPTab('pp-ov',this)">Overview</div>
+      <div class="ptab" onclick="showPTab('pp-att',this)">Attendance</div>
+      <div class="ptab" onclick="showPTab('pp-tech',this)">Technical</div>
+      <div class="ptab" onclick="showPTab('pp-match',this)">Matches</div>
+    </div>
+    <div id="pp-ov" class="ptab-c on">
+      <div class="g2">
+        <div class="panel"><div class="panel-title">Personal</div>${[['DOB',fmtDate(p.dob)],['Gender',p.gender||'—'],['School',p.school||'—'],['Grade',p.grade||'—']].map(([l,v])=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bord);font-size:12px"><span style="color:var(--fog)">${l}</span><span style="color:var(--w);font-weight:500">${v}</span></div>`).join('')}</div>
+        <div class="panel"><div class="panel-title">Parent</div>${[['Name',p.parentName||'—'],['Phone',p.parentPhone||'—'],['Emergency',p.emergencyContact||'—']].map(([l,v])=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bord);font-size:12px"><span style="color:var(--fog)">${l}</span><span style="color:var(--w);font-weight:500">${v}</span></div>`).join('')}</div>
+      </div>
+    </div>
+    <div id="pp-att" class="ptab-c">
+      <div class="panel"><div class="panel-title">Attendance <button class="btn btn-red btn-sm" onclick="openAttM('${id}')">+ Add</button></div>
+        ${pA.length?`<table class="tbl"><thead><tr><th>Date</th><th>Type</th><th>Status</th><th>Mins</th></tr></thead><tbody>${pA.map(a=>`<tr><td>${fmtDate(a.date)}</td><td>${a.sessionType}</td><td class="${a.status==='Present'?'att-p':a.status==='Late'?'att-l':'att-a'}">${a.status}</td><td>${a.minutes||'—'}</td></tr>`).join('')}</tbody></table>`
+        :'<div class="empty" style="padding:20px"><div class="empty-t">No Attendance</div></div>'}
+      </div>
+    </div>
+    <div id="pp-tech" class="ptab-c">
+      <div class="panel"><div class="panel-title">Assessments <button class="btn btn-red btn-sm" onclick="openAssessM('${id}')">+ Add</button></div>
+        ${pS.length?pS.map(a=>{const sc=Object.values(a.scores||{});const avg=sc.length?(sc.reduce((s,v)=>s+v,0)/sc.length).toFixed(1):'—';return`<div style="background:var(--bg3);border-radius:var(--rs);padding:14px;margin-bottom:10px"><div style="display:flex;justify-content:space-between;margin-bottom:10px"><span style="font-size:11px;color:var(--fog)">${fmtDate(a.date)}</span><span style="font-size:11px;color:var(--fog)">by ${a.coachName||'Coach'}</span></div>${SKILLS.map(sk=>{const k=sk.toLowerCase().replace(/ /g,'_');const v=a.scores[k]||0;return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;color:var(--fog);width:100px;flex-shrink:0">${sk}</span><div style="flex:1;background:var(--bg2);border-radius:3px;height:6px"><div style="height:100%;background:var(--red);border-radius:3px;width:${v/5*100}%"></div></div><span style="font-family:var(--fh);font-size:14px;color:var(--w);width:18px;text-align:right">${v}</span></div>`;}).join('')}${a.comment?`<div style="margin-top:10px;font-size:12px;color:var(--fog);border-top:1px solid var(--bord);padding-top:8px">"${a.comment}"</div>`:''}</div>`;}).join('')
+        :'<div class="empty" style="padding:20px"><div class="empty-t">No Assessments</div></div>'}
+      </div>
+    </div>
+    <div id="pp-match" class="ptab-c">
+      <div class="panel"><div class="panel-title">Matches <button class="btn btn-red btn-sm" onclick="openMatchM('${id}')">+ Add</button></div>
+        ${pM.length?`<table class="tbl"><thead><tr><th>Date</th><th>Opponent</th><th>G</th><th>A</th><th>Mins</th><th>Rating</th></tr></thead><tbody>${pM.map(m=>`<tr><td>${fmtDate(m.date)}</td><td>${m.opponent}</td><td style="color:var(--red);font-family:var(--fh);font-size:16px">${m.goals||0}</td><td>${m.assists||0}</td><td>${m.minutes||'—'}</td><td><span class="bdg bdg-w">${m.rating||'—'}/10</span></td></tr>`).join('')}</tbody></table>`
+        :'<div class="empty" style="padding:20px"><div class="empty-t">No Matches</div></div>'}
+      </div>
+    </div>`;
+}
+function showPTab(id,el){document.querySelectorAll('.ptab-c').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('on'));$(id)?.classList.add('on');el.classList.add('on');}
+function showPlayerList(){renderPlayers();$('page-actions').innerHTML=_actions.players();}
+
+// ── PLAYER MODAL ──
+function openPlayerM(pid){
+  _editPid=null;$('mp-title').textContent='Register Player';
+  ['p-fn','p-ln','p-pn','p-pp','p-sch','p-gr','p-inj','p-all','p-em'].forEach(id=>$(id).value='');
+  $('p-dob').value='';$('p-gen').value='Male';$('p-pos').value='Goalkeeper';$('p-foot').value='Right';$('p-ast').value='No';
+  $('p-ag').innerHTML='<option value="">Select</option>'+_cache.ageGroups.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
+  $('p-team').innerHTML='<option value="">Select</option>'+_cache.teams.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+  if(pid){$('p-ag').value=pid;}
+  openM('mPlayer');
+}
+function editPlayer(id){
+  const p=_cache.players.find(x=>x.id===id);if(!p)return;
+  _editPid=id;$('mp-title').textContent='Edit Player';
+  $('p-fn').value=p.firstName||'';$('p-ln').value=p.lastName||'';$('p-dob').value=p.dob||'';$('p-gen').value=p.gender||'Male';
+  $('p-pos').value=p.position||'Goalkeeper';$('p-foot').value=p.preferredFoot||'Right';
+  $('p-sch').value=p.school||'';$('p-gr').value=p.grade||'';$('p-pn').value=p.parentName||'';$('p-pp').value=p.parentPhone||'';
+  $('p-inj').value=p.injuries||'';$('p-all').value=p.allergies||'';$('p-ast').value=p.asthma||'No';$('p-em').value=p.emergencyContact||'';
+  $('p-ag').innerHTML='<option value="">Select</option>'+_cache.ageGroups.map(a=>`<option value="${a.id}"${a.id===p.ageGroupId?' selected':''}>${a.name}</option>`).join('');
+  $('p-team').innerHTML='<option value="">Select</option>'+_cache.teams.map(t=>`<option value="${t.id}"${t.id===p.teamId?' selected':''}>${t.name}</option>`).join('');
+  openM('mPlayer');
+}
+async function savePlayer(){
+  const fn=$('p-fn').value.trim(),ln=$('p-ln').value.trim();
+  if(!fn||!ln){toast('Name required',true);return;}
+  const btn=$('save-p-btn');btn.disabled=true;btn.textContent='Saving…';
+  const data={firstName:fn,lastName:ln,dob:$('p-dob').value,gender:$('p-gen').value,ageGroupId:$('p-ag').value,teamId:$('p-team').value,position:$('p-pos').value,preferredFoot:$('p-foot').value,school:$('p-sch').value,grade:$('p-gr').value,parentName:$('p-pn').value,parentPhone:$('p-pp').value,injuries:$('p-inj').value,allergies:$('p-all').value,asthma:$('p-ast').value,emergencyContact:$('p-em').value,updatedAt:Date.now()};
+  try{
+    if(_editPid){await window._FS.updateDoc(window._FS.doc(window._db,COL+'players',_editPid),data);const i=_cache.players.findIndex(p=>p.id===_editPid);if(i>=0)_cache.players[i]={..._cache.players[i],...data};toast('Player updated ✓');}
+    else{data.created=Date.now();const ref=await window._FS.addDoc(window._FS.collection(window._db,COL+'players'),data);_cache.players.push({id:ref.id,...data});toast('Player registered ✓');}
+    svg();closeM('mPlayer');renderPlayers();renderDashboard();
+  }catch(e){toast('Error: '+e.message,true);}
+  btn.disabled=false;btn.textContent='Save Player';
+}
+
+// ── TEAMS ──
+function renderTeams(){
+  $('teams-tbl').innerHTML=_cache.teams.length
+    ?`<table class="tbl"><thead><tr><th>Team</th><th>Age Group</th><th>Coach</th><th>Players</th><th>Actions</th></tr></thead><tbody>${_cache.teams.map(t=>{
+        const ag=_cache.ageGroups.find(a=>a.id===t.ageGroupId),c=_cache.coaches.find(x=>x.id===t.coachId),cnt=_cache.players.filter(p=>p.teamId===t.id).length;
+        return`<tr><td>${t.name}</td><td>${ag?ag.name:'—'}</td><td>${c?c.name:'Unassigned'}</td><td><span class="bdg bdg-r">${cnt}</span></td><td><div class="tbl-acts"><button class="btn btn-ghost btn-sm" onclick="openTeamM('${t.id}')">Edit</button><button class="btn btn-sm" style="background:var(--rda);color:var(--red)" onclick="confirmDel('${t.id}','team','${t.name.replace(/'/g,"\\'")}')">Del</button></div></td></tr>`;
+      }).join('')}</tbody></table>`
+    :`<div class="empty"><div class="empty-ico">🏟️</div><div class="empty-t">No Teams</div><button class="btn btn-red" onclick="openTeamM()">+ Create Team</button></div>`;
+}
+function openTeamM(id){
+  $('t-ag').innerHTML='<option value="">Select</option>'+_cache.ageGroups.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
+  $('t-coach').innerHTML='<option value="">Optional</option>'+_cache.coaches.filter(c=>c.role==='coach').map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  if(id){const t=_cache.teams.find(x=>x.id===id);if(t){$('t-name').value=t.name;$('t-ag').value=t.ageGroupId||'';$('t-coach').value=t.coachId||'';$('mt-title').textContent='Edit Team';}$('t-name').dataset.eid=id;}
+  else{$('t-name').value='';$('mt-title').textContent='Create Team';delete $('t-name').dataset.eid;}
+  openM('mTeam');
+}
+async function saveTeam(){
+  const name=$('t-name').value.trim();if(!name){toast('Name required',true);return;}
+  const data={name,ageGroupId:$('t-ag').value,coachId:$('t-coach').value,updatedAt:Date.now()};
+  const eid=$('t-name').dataset.eid;
+  try{
+    if(eid){await window._FS.updateDoc(window._FS.doc(window._db,COL+'teams',eid),data);const i=_cache.teams.findIndex(t=>t.id===eid);if(i>=0)_cache.teams[i]={..._cache.teams[i],...data};toast('Team updated ✓');}
+    else{data.created=Date.now();const ref=await window._FS.addDoc(window._FS.collection(window._db,COL+'teams'),data);_cache.teams.push({id:ref.id,...data});toast('Team created ✓');}
+    svg();closeM('mTeam');renderTeams();renderDashboard();
+  }catch(e){toast('Error: '+e.message,true);}
+}
+
+// ── COACHES ──
+function renderCoaches(){
+  $('coaches-tbl').innerHTML=_cache.coaches.filter(c=>c.role==='coach').length
+    ?`<table class="tbl"><thead><tr><th>Name</th><th>Username</th><th>Team</th><th>Actions</th></tr></thead><tbody>${_cache.coaches.filter(c=>c.role==='coach').map(c=>{
+        const t=_cache.teams.find(x=>x.coachId===c.id);
+        return`<tr><td><div style="display:flex;align-items:center;gap:8px"><div style="width:26px;height:26px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--w)">${ini(c.name)}</div>${c.name}</div></td><td style="font-weight:500;color:var(--w)">${c.username||'—'}</td><td>${t?t.name:'Not assigned'}</td><td><button class="btn btn-sm" style="background:var(--rda);color:var(--red)" onclick="confirmDel('${c.id}','coach','${c.name.replace(/'/g,"\\'")}')">Remove</button></td></tr>`;
+      }).join('')}</tbody></table>`
+    :`<div class="empty"><div class="empty-ico">👨‍🏫</div><div class="empty-t">No Coaches</div><div class="empty-s">You set their username & password — share it with them.</div><button class="btn btn-red" onclick="openCoachM()">+ Add Coach</button></div>`;
+}
+function openCoachM(){
+  $('co-name').value='';$('co-uname').value='';$('co-pass').value='';
+  $('co-team').innerHTML='<option value="">Assign later</option>'+_cache.teams.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+  openM('mCoach');
+}
+async function saveCoach(){
+  const name=$('co-name').value.trim(),uname=$('co-uname').value.trim().toLowerCase().replace(/\s+/g,'_'),pass=$('co-pass').value.trim(),tid=$('co-team').value;
+  if(!name||!uname||!pass){toast('All fields required',true);return;}
+  try{
+    const id='user_'+Date.now();
+    await window._FS.setDoc(window._FS.doc(window._db,COL+'users',id),{name,username:uname,role:'coach',password:hp(pass),teamId:tid,created:Date.now()});
+    _cache.coaches.push({id,name,username:uname,role:'coach',teamId:tid});
+    if(tid){await window._FS.updateDoc(window._FS.doc(window._db,COL+'teams',tid),{coachId:id});const t=_cache.teams.find(x=>x.id===tid);if(t)t.coachId=id;}
+    closeM('mCoach');
+    $('creds-title').textContent='✓ Coach Created';$('creds-sub').textContent='Share these with '+name;
+    $('creds-uname').textContent=uname;$('creds-pass').textContent=pass;
+    openM('mCreds');renderCoaches();
+  }catch(e){toast('Error: '+e.message,true);}
+}
+
+// ── AGE GROUPS ──
+function renderAG(){
+  $('ag-tbl').innerHTML=_cache.ageGroups.length
+    ?`<table class="tbl"><thead><tr><th>Name</th><th>Ages</th><th>Teams</th><th>Players</th><th>Actions</th></tr></thead><tbody>${_cache.ageGroups.map(a=>{
+        const teams=_cache.teams.filter(t=>t.ageGroupId===a.id),players=_cache.players.filter(p=>p.ageGroupId===a.id);
+        return`<tr><td><span class="bdg bdg-r" style="font-size:11px">${a.name}</span></td><td>${a.minAge||'—'}–${a.maxAge||'—'}</td><td>${teams.length}</td><td>${players.length}</td><td><button class="btn btn-sm" style="background:var(--rda);color:var(--red)" onclick="confirmDel('${a.id}','ag','${a.name}')">Del</button></td></tr>`;
+      }).join('')}</tbody></table>`
+    :`<div class="empty"><div class="empty-ico">📋</div><div class="empty-t">No Age Groups</div><button class="btn btn-red" onclick="openAGM()">+ Add</button></div>`;
+}
+function openAGM(){$('ag-name').value='';$('ag-min').value='';$('ag-max').value='';openM('mAG');}
+async function saveAG(){
+  const name=$('ag-name').value.trim();if(!name){toast('Name required',true);return;}
+  const data={name,minAge:$('ag-min').value,maxAge:$('ag-max').value,created:Date.now()};
+  try{const ref=await window._FS.addDoc(window._FS.collection(window._db,COL+'ageGroups'),data);_cache.ageGroups.push({id:ref.id,...data});toast('Age group created ✓');svg();closeM('mAG');renderAG();}
+  catch(e){toast('Error: '+e.message,true);}
+}
+
+// ── PENDING REGISTRATIONS ──
+async function loadPendingBadge(){
+  try{const snap=await window._FS.getDocs(window._FS.collection(window._db,COL+'registrations'));let n=0;snap.forEach(d=>{if(d.data().status==='pending')n++;});const b=$('pend-badge');if(b){b.style.display=n>0?'inline':'none';b.textContent=n;}}catch(e){}
+}
+async function renderPending(){
+  try{
+    const snap=await window._FS.getDocs(window._FS.collection(window._db,COL+'registrations'));
+    const all=[];snap.forEach(d=>all.push({id:d.id,...d.data()}));
+    const pend=all.filter(r=>r.status==='pending'),appr=all.filter(r=>r.status==='approved'),rej=all.filter(r=>r.status==='rejected');
+    if(!all.length){$('pending-content').innerHTML=`<div class="empty"><div class="empty-ico">🔔</div><div class="empty-t">No Registrations</div><div class="empty-s">Public registrations from the website will appear here.</div></div>`;return;}
+    const row=(r,act)=>`<div class="preg-row">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap">
+            <div style="font-family:var(--fh);font-size:20px;color:var(--w)">${r.firstName} ${r.lastName}</div>
+            <span class="bdg ${r.status==='approved'?'bdg-g':r.status==='rejected'?'bdg-r':'bdg-y'}">${r.status}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:11px;color:var(--fog);margin-bottom:8px">
+            <span>👤 ${r.parentName||'—'}</span><span>📞 ${r.parentPhone||'—'}</span><span>💳 ${r.plan?.name||'—'}</span>
+            <span>💰 ${r.plan?.priceStr||'—'}</span><span>🔖 ${r.refCode||'—'}</span><span>📅 ${fmtDate(r.created?new Date(r.created).toISOString().split('T')[0]:'')}</span>
+          </div>
+          ${r.paymentProof?`<img src="${r.paymentProof}" style="max-height:120px;border-radius:var(--rs);border:1px solid var(--bord);cursor:pointer;object-fit:contain" onclick="window.open().document.write('<img src=\\''+this.src+'\\' style=\\'max-width:100%\\'>');return false" title="Click to enlarge">`:'<div style="font-size:10px;color:var(--mist);font-style:italic">No payment proof yet</div>'}
+        </div>
+        ${act?`<div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn btn-sm" style="background:rgba(74,222,128,.14);color:#4ade80;border:1px solid rgba(74,222,128,.3)" onclick="approveReg('${r.id}')">✓ Approve</button>
+          <button class="btn btn-sm" style="background:var(--rda);color:var(--red);border:1px solid rgba(220,38,38,.3)" onclick="rejectReg('${r.id}')">✗ Reject</button>
+        </div>`:''}
+      </div></div>`;
+    $('pending-content').innerHTML=`
+      <div style="margin-bottom:20px"><div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--red);margin-bottom:12px;display:flex;align-items:center;gap:8px">🔔 Pending <span style="background:var(--red);color:var(--w);font-size:9px;padding:1px 7px;border-radius:10px">${pend.length}</span></div>
+        ${pend.length?pend.map(r=>row(r,true)).join(''):'<div style="font-size:12px;color:var(--fog);padding:8px 0">None pending.</div>'}
+      </div>
+      ${appr.length?`<div style="margin-bottom:20px"><div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#4ade80;margin-bottom:12px">✓ Approved (${appr.length})</div>${appr.map(r=>row(r,false)).join('')}</div>`:''}
+      ${rej.length?`<div><div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--fog);margin-bottom:12px">✗ Rejected (${rej.length})</div>${rej.map(r=>row(r,false)).join('')}</div>`:''}`;
+  }catch(e){toast('Error loading registrations',true);}
+}
+
+function genCreds(name,phone){const n=(name||'parent').split(' ')[0].toLowerCase().replace(/[^a-z]/g,'');const ph=(phone||'').replace(/[^0-9]/g,'').slice(-4);return{uname:n+(ph||Math.floor(1000+Math.random()*9000)),pass:n.charAt(0).toUpperCase()+n.slice(1)+(ph||Math.floor(100+Math.random()*900))+'@'};}
+
+async function approveReg(regId){
+  try{
+    const snap=await window._FS.getDoc(window._FS.doc(window._db,COL+'registrations',regId));
+    const r=snap.data();
+    if(r.addedToRoster){toast('Already approved');return;}
+    await window._FS.updateDoc(window._FS.doc(window._db,COL+'registrations',regId),{status:'approved',approvedAt:Date.now(),addedToRoster:true});
+    const pData={firstName:r.firstName,lastName:r.lastName,dob:r.dob,gender:r.gender,position:r.position,preferredFoot:r.preferredFoot,school:r.school,grade:r.grade,parentName:r.parentName,parentPhone:r.parentPhone,parentEmail:r.parentEmail,injuries:r.injuries,allergies:r.allergies,asthma:r.asthma,emergencyContact:r.emergencyContact,plan:r.plan,refCode:r.refCode,teamId:'',ageGroupId:'',created:Date.now(),source:'registration'};
+    const ref=await window._FS.addDoc(window._FS.collection(window._db,COL+'players'),pData);
+    _cache.players.push({id:ref.id,...pData});
+    const creds=genCreds(r.parentName,r.parentPhone);
+    await window._FS.setDoc(window._FS.doc(window._db,COL+'users','parent_'+Date.now()),{name:r.parentName,username:creds.uname,role:'parent',password:hp(creds.pass),playerId:ref.id,playerName:r.firstName+' '+r.lastName,created:Date.now()});
+    $('creds-title').textContent='✓ Player Approved!';$('creds-sub').textContent='Parent portal login for '+r.parentName+' (parent of '+r.firstName+' '+r.lastName+')';
+    $('creds-uname').textContent=creds.uname;$('creds-pass').textContent=creds.pass;
+    openM('mCreds');toast('✓ Approved — player added to roster');renderPending();renderDashboard();loadPendingBadge();
+  }catch(e){toast('Error: '+e.message,true);}
+}
+async function rejectReg(regId){
+  if(!confirm('Reject this registration?'))return;
+  try{await window._FS.updateDoc(window._FS.doc(window._db,COL+'registrations',regId),{status:'rejected',rejectedAt:Date.now()});toast('Rejected');renderPending();loadPendingBadge();}
+  catch(e){toast('Error',true);}
+}
+
+// ── PARENTS ──
+async function renderParents(){
+  try{
+    const snap=await window._FS.getDocs(window._FS.collection(window._db,COL+'users'));
+    const parents=[];snap.forEach(d=>{const x=d.data();if(x.role==='parent'&&!x.deleted)parents.push({id:d.id,...x});});
+    $('parents-tbl').innerHTML=parents.length
+      ?`<table class="tbl"><thead><tr><th>Name</th><th>Username</th><th>Player</th><th>Actions</th></tr></thead><tbody>${parents.map(p=>{const pl=_cache.players.find(x=>x.id===p.playerId);return`<tr><td>${p.name}</td><td style="color:var(--w);font-weight:500">${p.username||'—'}</td><td>${pl?pl.firstName+' '+pl.lastName:'Not linked'}</td><td><button class="btn btn-sm" style="background:var(--rda);color:var(--red)" onclick="confirmDel('${p.id}','parent','${(p.name||'').replace(/'/g,"\\'")}')">Remove</button></td></tr>`;}).join('')}</tbody></table>`
+      :`<div class="empty"><div class="empty-ico">👨‍👩‍👧</div><div class="empty-t">No Parent Accounts</div><button class="btn btn-red" onclick="openParentM()">+ Create Account</button></div>`;
+  }catch(e){toast('Error',true);}
+}
+function openParentM(){
+  $('par-name').value='';$('par-uname').value='';$('par-pass').value='';
+  $('par-player').innerHTML='<option value="">Select player</option>'+_cache.players.map(p=>`<option value="${p.id}">${p.firstName} ${p.lastName}</option>`).join('');
+  openM('mParent');
+}
+async function saveParent(){
+  const name=$('par-name').value.trim(),uname=$('par-uname').value.trim().toLowerCase().replace(/\s+/g,'_'),pass=$('par-pass').value.trim(),pid=$('par-player').value;
+  if(!name||!uname||!pass||!pid){toast('All fields required',true);return;}
+  const pl=_cache.players.find(p=>p.id===pid);
+  try{
+    const id='parent_'+Date.now();
+    await window._FS.setDoc(window._FS.doc(window._db,COL+'users',id),{name,username:uname,role:'parent',password:hp(pass),playerId:pid,playerName:pl?pl.firstName+' '+pl.lastName:'',created:Date.now()});
+    closeM('mParent');$('creds-title').textContent='✓ Parent Account Created';$('creds-sub').textContent='Share with '+name;
+    $('creds-uname').textContent=uname;$('creds-pass').textContent=pass;openM('mCreds');renderParents();
+  }catch(e){toast('Error: '+e.message,true);}
+}
+
+// ── ATTENDANCE ──
+function renderAtt(){
+  const att=[..._cache.attendance].sort((a,b)=>(b.created||0)-(a.created||0));
+  $('att-tbl').innerHTML=att.length
+    ?`<table class="tbl"><thead><tr><th>Player</th><th>Date</th><th>Type</th><th>Status</th><th>Mins</th><th>Actions</th></tr></thead><tbody>${att.map(a=>{const p=_cache.players.find(x=>x.id===a.playerId);const sc=a.status==='Present'?'att-p':a.status==='Late'?'att-l':'att-a';return`<tr><td>${p?p.firstName+' '+p.lastName:'Unknown'}</td><td>${fmtDate(a.date)}</td><td><span class="bdg bdg-w">${a.sessionType}</span></td><td class="${sc}">${a.status}</td><td>${a.minutes||'—'}</td><td><button class="btn btn-sm" style="background:var(--rda);color:var(--red)" onclick="confirmDel('${a.id}','att','this record')">Del</button></td></tr>`;}).join('')}</tbody></table>`
+    :`<div class="empty"><div class="empty-ico">✅</div><div class="empty-t">No Attendance</div><button class="btn btn-red" onclick="openAttM()">+ Log</button></div>`;
+}
+function openAttM(pid){
+  $('att-date').value=new Date().toISOString().split('T')[0];$('att-status').value='Present';$('att-type').value='Training';$('att-mins').value='';$('att-notes').value='';
+  const players=SESSION.role==='coach'?_cache.players.filter(p=>{const t=_cache.teams.find(t=>t.coachId===SESSION.id);return t&&p.teamId===t.id;}):_cache.players;
+  $('att-player').innerHTML='<option value="">Select</option>'+players.map(p=>`<option value="${p.id}">${p.firstName} ${p.lastName}</option>`).join('');
+  if(pid)$('att-player').value=pid;
+  openM('mAtt');
+}
+async function saveAtt(){
+  const pid=$('att-player').value,date=$('att-date').value;
+  if(!pid||!date){toast('Player and date required',true);return;}
+  const data={playerId:pid,date,sessionType:$('att-type').value,status:$('att-status').value,minutes:$('att-mins').value,notes:$('att-notes').value,coachId:SESSION.id,created:Date.now()};
+  try{const ref=await window._FS.addDoc(window._FS.collection(window._db,COL+'attendance'),data);_cache.attendance.push({id:ref.id,...data});toast('Attendance saved ✓');svg();closeM('mAtt');renderAtt();renderDashboard();}
+  catch(e){toast('Error: '+e.message,true);}
+}
+
+// ── ASSESSMENTS ──
+function renderAssess(){
+  const ass=[..._cache.assessments].sort((a,b)=>(b.created||0)-(a.created||0));
+  $('assess-tbl').innerHTML=ass.length
+    ?`<table class="tbl"><thead><tr><th>Player</th><th>Date</th><th>Avg</th><th>Coach</th><th>Actions</th></tr></thead><tbody>${ass.map(a=>{const p=_cache.players.find(x=>x.id===a.playerId);const sc=Object.values(a.scores||{});const avg=sc.length?(sc.reduce((s,v)=>s+v,0)/sc.length).toFixed(1):'—';return`<tr><td>${p?p.firstName+' '+p.lastName:'Unknown'}</td><td>${fmtDate(a.date)}</td><td><span class="bdg bdg-r">${avg}/5</span></td><td>${a.coachName||'—'}</td><td><button class="btn btn-sm" style="background:var(--rda);color:var(--red)" onclick="confirmDel('${a.id}','assess','this assessment')">Del</button></td></tr>`;}).join('')}</tbody></table>`
+    :`<div class="empty"><div class="empty-ico">⭐</div><div class="empty-t">No Assessments</div><button class="btn btn-red" onclick="openAssessM()">+ Add</button></div>`;
+}
+function openAssessM(pid){
+  _techScores={};$('as-date').value=new Date().toISOString().split('T')[0];$('as-comment').value='';
+  const players=SESSION.role==='coach'?_cache.players.filter(p=>{const t=_cache.teams.find(t=>t.coachId===SESSION.id);return t&&p.teamId===t.id;}):_cache.players;
+  $('as-player').innerHTML='<option value="">Select</option>'+players.map(p=>`<option value="${p.id}">${p.firstName} ${p.lastName}</option>`).join('');
+  if(pid)$('as-player').value=pid;
+  $('skill-grid').innerHTML=SKILLS.map(sk=>`<div class="sgrid"><div class="slbl">${sk}</div><div class="sbtns">${[1,2,3,4,5].map(n=>`<button class="sbtn" id="sk-${sk.replace(/ /g,'_')}-${n}" onclick="setScore('${sk}',${n})">${n}</button>`).join('')}</div></div>`).join('');
+  openM('mAssess');
+}
+function setScore(skill,val){const k=skill.replace(/ /g,'_');_techScores[k]=val;[1,2,3,4,5].forEach(n=>{const b=$(`sk-${k}-${n}`);if(b)b.className='sbtn'+(n<=val?' on':'');});}
+async function saveAssessment(){
+  const pid=$('as-player').value;if(!pid){toast('Select a player',true);return;}
+  const data={playerId:pid,date:$('as-date').value,scores:{..._techScores},comment:$('as-comment').value,coachId:SESSION.id,coachName:SESSION.name,created:Date.now()};
+  try{const ref=await window._FS.addDoc(window._FS.collection(window._db,COL+'assessments'),data);_cache.assessments.push({id:ref.id,...data});toast('Assessment saved ✓');svg();closeM('mAssess');renderAssess();}
+  catch(e){toast('Error: '+e.message,true);}
+}
+
+// ── MATCHES ──
+function renderMatches(){
+  const m=[..._cache.matches].sort((a,b)=>(b.created||0)-(a.created||0));
+  $('matches-tbl').innerHTML=m.length
+    ?`<table class="tbl"><thead><tr><th>Player</th><th>Date</th><th>Opponent</th><th>G</th><th>A</th><th>Rating</th><th>Actions</th></tr></thead><tbody>${m.map(x=>{const p=_cache.players.find(y=>y.id===x.playerId);return`<tr><td>${p?p.firstName+' '+p.lastName:'Unknown'}</td><td>${fmtDate(x.date)}</td><td>${x.opponent}</td><td style="color:var(--red);font-family:var(--fh);font-size:16px">${x.goals||0}</td><td>${x.assists||0}</td><td><span class="bdg bdg-w">${x.rating||'—'}/10</span></td><td><button class="btn btn-sm" style="background:var(--rda);color:var(--red)" onclick="confirmDel('${x.id}','match','this report')">Del</button></td></tr>`;}).join('')}</tbody></table>`
+    :`<div class="empty"><div class="empty-ico">⚽</div><div class="empty-t">No Match Reports</div><button class="btn btn-red" onclick="openMatchM()">+ Add</button></div>`;
+}
+function openMatchM(pid){
+  $('mr-date').value=new Date().toISOString().split('T')[0];$('mr-opp').value='';$('mr-mins').value='90';$('mr-g').value='0';$('mr-a').value='0';$('mr-kp').value='0';$('mr-t').value='0';$('mr-r').value='';$('mr-fb').value='';
+  const players=SESSION.role==='coach'?_cache.players.filter(p=>{const t=_cache.teams.find(t=>t.coachId===SESSION.id);return t&&p.teamId===t.id;}):_cache.players;
+  $('mr-player').innerHTML='<option value="">Select</option>'+players.map(p=>`<option value="${p.id}">${p.firstName} ${p.lastName}</option>`).join('');
+  if(pid)$('mr-player').value=pid;
+  openM('mMatch');
+}
+async function saveMatch(){
+  const pid=$('mr-player').value,opp=$('mr-opp').value.trim();
+  if(!pid||!opp){toast('Player and opponent required',true);return;}
+  const data={playerId:pid,date:$('mr-date').value,opponent:opp,position:$('mr-pos').value,minutes:+$('mr-mins').value||0,goals:+$('mr-g').value||0,assists:+$('mr-a').value||0,keyPasses:+$('mr-kp').value||0,tackles:+$('mr-t').value||0,rating:+$('mr-r').value||0,feedback:$('mr-fb').value,coachId:SESSION.id,created:Date.now()};
+  try{const ref=await window._FS.addDoc(window._FS.collection(window._db,COL+'matchReports'),data);_cache.matches.push({id:ref.id,...data});toast('Match report saved ✓');svg();closeM('mMatch');renderMatches();}
+  catch(e){toast('Error: '+e.message,true);}
+}
+
+// ── DELETE ──
+const _colMap={player:COL+'players',team:COL+'teams',coach:COL+'users',ag:COL+'ageGroups',att:COL+'attendance',assess:COL+'assessments',match:COL+'matchReports',parent:COL+'users'};
+const _cacheKey={player:'players',team:'teams',coach:'coaches',ag:'ageGroups',att:'attendance',assess:'assessments',match:'matches',parent:'coaches'};
+const _rerender={player:renderPlayers,team:renderTeams,coach:renderCoaches,ag:renderAG,att:renderAtt,assess:renderAssess,match:renderMatches,parent:renderParents};
+function confirmDel(id,type,label){
+  $('del-msg').textContent='Delete "'+label+'"? This cannot be undone.';
+  $('del-btn').onclick=async()=>{
+    try{await window._FS.deleteDoc(window._FS.doc(window._db,_colMap[type],id));if(_cacheKey[type])_cache[_cacheKey[type]]=_cache[_cacheKey[type]].filter(x=>x.id!==id);toast('Deleted ✓');closeM('mDel');if(_rerender[type])_rerender[type]();renderDashboard();}
+    catch(e){toast('Error: '+e.message,true);}
+  };
+  openM('mDel');
+}
+
+// ── PARENT PORTAL ──
+function renderParentView(){
+  const pid=SESSION.playerId;
+  $('nav-admin').style.display='none';
+  document.querySelector('.main .topbar .topbar-title').textContent='My Child\'s Profile';
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  $('pg-dashboard').classList.add('on');
+  if(!pid){$('dash-cards').innerHTML='';$('dash-players').innerHTML='<div class="empty"><div class="empty-t">No player linked</div><div class="empty-s">Contact the academy.</div></div>';$('dash-teams').innerHTML='';$('dash-att').innerHTML='';return;}
+  viewPlayer(pid);
+  $('pg-dashboard').classList.remove('on');
+  $('pg-players').classList.add('on');
+}
+
+// ── WEBSITE EDITOR ──
+function openWebsiteEditor(){
+  toast('Website editor: open index.html in a browser and use Edit Website in the portal sidebar');
+}
+function cancelWebEdit(){}
+async function saveWebEdits(){}
+
+// ── MODAL BACKDROP ──
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)closeM(this.id);}));
+$('admin-pass-inp')?.addEventListener('keydown',e=>{if(e.key==='Enter')doAdminLogin();});
+
+// ── INIT ──
+waitFB(async()=>{
+  const saved=sessionStorage.getItem('ibex_s');
+  if(saved){
+    try{SESSION=JSON.parse(saved);await enterApp();return;}
+    catch(e){sessionStorage.removeItem('ibex_s');}
+  }
+  scr('s-login');
+});
+setTimeout(()=>{if(document.getElementById('s-load').classList.contains('on'))scr('s-login');},7000);
+</script>
+</body>
+</html>
 
